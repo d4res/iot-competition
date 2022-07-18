@@ -5,6 +5,7 @@ import (
 	"github.com/gobwas/ws"
 	"io"
 	"log"
+	"net"
 	"net/http"
 )
 
@@ -19,7 +20,7 @@ func NewServer() *Server {
 func (s *Server) Start() {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/target", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/gps", func(w http.ResponseWriter, r *http.Request) {
 		body := r.Body
 		defer body.Close()
 		contents, err := io.ReadAll(body)
@@ -28,17 +29,26 @@ func (s *Server) Start() {
 		if err != nil {
 			log.Println(err)
 		}
-		s.Task <- location
+		log.Printf("receive gps %v", location)
+		w.Write([]byte("success"))
+		go func() {
+			s.Task <- location
+		}()
+		//s.Task <- location
 	})
 
 	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("ws connect from ", r.RemoteAddr)
 		conn, _, _, err := ws.UpgradeHTTP(r, w)
 		if err != nil {
 			log.Println(err)
 		}
 
-		go func() {
+		// write loop
+		go func(conn net.Conn) {
 			for {
+				// sending data back to client
+				log.Println("sending data back to client ", conn.RemoteAddr())
 				location := <-s.Task
 				data, err := json.Marshal(location)
 				if err != nil {
@@ -48,7 +58,7 @@ func (s *Server) Start() {
 				frame := ws.NewFrame(ws.OpText, true, data)
 				ws.WriteFrame(conn, frame)
 			}
-		}()
+		}(conn)
 
 		for {
 			// read loop
@@ -64,5 +74,5 @@ func (s *Server) Start() {
 		}
 	})
 
-	http.ListenAndServe(":8888", mux)
+	log.Fatalln(http.ListenAndServe(":8888", mux))
 }

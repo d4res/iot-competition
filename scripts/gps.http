@@ -1,0 +1,6 @@
+POST http://81.68.245.247:8888/gps
+Content-Type: text/plain
+
+{"latitude": 12.23,"longitude": 126.2213}
+
+###
