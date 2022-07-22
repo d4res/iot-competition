@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/binding_state_label"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_below="@+id/textView"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="50dp"
+        android:gravity="center"
+        android:text="Binding State:"
+        android:textColor="@color/colorBlack"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tv_binding_state_info"
+        android:layout_width="220dp"
+        android:layout_height="60dp"
+        android:layout_below="@+id/binding_state_label"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:text="Unknown"
+        android:textColor="@color/colorBlack"
+        android:textSize="17sp" />
+
+    <TextView
+        android:id="@+id/activation_state_label"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_below="@+id/tv_binding_state_info"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="11dp"
+        android:text="App Activation State:"
+        android:textColor="@color/colorBlack"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tv_activation_state_info"
+        android:layout_width="220dp"
+        android:layout_height="60dp"
+        android:layout_alignEnd="@+id/tv_binding_state_info"
+        android:layout_below="@+id/activation_state_label"
+        android:text="Unknown"
+        android:textAlignment="center"
+        android:textColor="@color/colorBlack"
+        android:textSize="17sp" />
+
+    <Button
+        android:id="@+id/btn_attitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_activation_state_info"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="119dp"
+        android:text="Attitude" />
+
+    <Button
+        android:id="@+id/btn_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_activation_state_info"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="127dp"
+        android:layout_marginTop="120dp"
+        android:text="Location" />
+
+    <Button
+        android:id="@+id/btn_nav"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_activation_state_info"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="193dp"
+        android:text="Auto Navigation" />
+
+    <Button
+        android:id="@+id/btn_cfm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_activation_state_info"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="264dp"
+        android:text="Confirm" />
+
+    <Button
+        android:id="@+id/btn_home"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_activation_state_info"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="152dp"
+        android:layout_marginTop="264dp"
+        android:text="Go Home" />
+
+    <Button
+        android:id="@+id/btn_connect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_activation_state_info"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="276dp"
+        android:layout_marginTop="264dp"
+        android:text="connect" />
+
+    <Button
+        android:id="@+id/btn_enable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_activation_state_info"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="176dp"
+        android:layout_marginTop="35dp"
+        android:text="Enable" />
+
+    <Button
+        android:id="@+id/btn_disable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_activation_state_info"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="35dp"
+        android:layout_toEndOf="@+id/btn_enable"
+        android:text="Disable" />
+
+    <Button
+        android:id="@+id/btn_takeoff"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_activation_state_info"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="62dp"
+        android:layout_marginTop="35dp"
+        android:text="Take Off" />
+
+    <Button
+        android:id="@+id/btn_north"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_activation_state_info"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="105dp"
+        android:layout_marginEnd="95dp"
+        android:text="N" />
+
+    <Button
+        android:id="@+id/btn_south"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btn_north"
+        android:layout_marginTop="48dp"
+        android:layout_marginEnd="-50dp"
+        android:layout_toStartOf="@+id/btn_north"
+        android:text="S" />
+
+    <Button
+        android:id="@+id/btn_east"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btn_north"
+        android:layout_marginStart="51dp"
+        android:layout_marginTop="0dp"
+        android:layout_toEndOf="@+id/btn_west"
+        android:text="E" />
+
+    <Button
+        android:id="@+id/btn_west"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btn_north"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="1dp"
+        android:layout_toStartOf="@+id/btn_north"
+        android:text="W" />
+
+    <EditText
+        android:id="@+id/et_latitude"
+        android:layout_width="125dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="68dp"
+        android:layout_marginBottom="19dp"
+        android:ems="10"
+        android:inputType="numberDecimal" />
+
+    <EditText
+        android:id="@+id/et_longitude"
+        android:layout_width="125dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="264dp"
+        android:layout_marginBottom="20dp"
+        android:ems="10"
+        android:inputType="numberDecimal" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="9dp"
+        android:layout_marginBottom="30dp"
+        android:text="latitude" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="197dp"
+        android:layout_marginBottom="30dp"
+        android:text="longitude" />
+
+
+</RelativeLayout>
