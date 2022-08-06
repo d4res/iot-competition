@@ -1,5 +1,14 @@
 package com.iot.aircraftNav;
 
+import org.java_websocket.client.WebSocketClient;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Queue;
+
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.virtualstick.FlightCoordinateSystem;
 import dji.common.flightcontroller.virtualstick.RollPitchControlMode;
@@ -16,6 +25,8 @@ public class FlighterController {
     private final boolean isAvailable ;
     private  boolean isVSOn;
     NavMission navMission;
+    private HttpURLConnection connection = null;
+    private final String url = "http://81.68.245.247:8888/arrive";
 
     private void log(String msg) {
         logger.add("[FC]", msg);
@@ -37,6 +48,16 @@ public class FlighterController {
            log("flighter connected");
         }
         isVSOn = false;
+
+        try {
+            URL _url = new URL(url);
+            this.connection = (HttpURLConnection) _url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setConnectTimeout(50000);
+            connection.setReadTimeout(50000);
+        } catch (Exception e) {
+            log(e.getMessage());
+        }
     }
 
     public boolean IsAvailable() {
@@ -108,10 +129,43 @@ public class FlighterController {
         }
     }
 
+    public void NavQueue(Queue<location> workQueue) {
+        new Thread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        while(!workQueue.isEmpty()) {
+                            location work = workQueue.poll();
+                            navMission = new NavMission(flightController, work.latitude, work.longitude);
+                            Thread workThread = new Thread(navMission);
+                            workThread.start();
+                            try {
+                                workThread.join();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            
+                            try {
+                                InputStream in = connection.getInputStream();
+                                in.close();
+                            } catch (IOException e) {
+                                log(e.getMessage());
+                            }
+                            log(String.format("arrive: %f %f",work.latitude, work.longitude));
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                log(e.getMessage());
+                            }
+                        }
+                    }
+                }
+        ).start();
+    }
+
     public void StopNav() {
         navMission.Stop();
         log("navMission stop manually");
-
     }
 
 }

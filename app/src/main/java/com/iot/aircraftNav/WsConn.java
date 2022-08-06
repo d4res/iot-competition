@@ -31,15 +31,17 @@ public class WsConn extends WebSocketClient {
     @Override
     public void onMessage(String message) {
         try {
-            JSONObject obj = new JSONObject(message);
-            JSONArray data = obj.getJSONArray("");
-            double latitude = obj.getDouble("latitude");
-            double longitude = obj.getDouble("longitude");
-            m.setTargetLatitude(latitude);
-            m.setTargetLongitude(longitude);
-            m.latitudeET.setText(String.valueOf(latitude));
-            m.longitudeET.setText(String.valueOf(longitude));
-            m.logger.add("[WS]",String.format(Locale.CHINA, "receive gps: %f %f", latitude, longitude));
+            JSONArray data = new JSONArray(message);
+            for (int i = 0; i < data.length(); i++) {
+                JSONObject obj = data.getJSONObject(i);
+                double latitude = obj.getDouble("latitude");
+                double longitude = obj.getDouble("longitude");
+                m.logger.add("[WS]",String.format(Locale.CHINA, "receive gps: %f %f", latitude, longitude));
+                location loc = new location(latitude, longitude);
+//                m.latitudeET.setText(String.valueOf(latitude));
+//                m.longitudeET.setText(String.valueOf(longitude));
+                m.workQueue.add(loc);
+            }
         } catch (Exception e ) {
             m.logger.add("[WS]", e.getMessage());
         }

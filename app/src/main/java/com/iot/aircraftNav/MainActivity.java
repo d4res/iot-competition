@@ -11,6 +11,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.net.URI;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import org.java_websocket.client.WebSocketClient;
 
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private NavMission navMission;
 
-    private static final String url = "ws://81.68.245.247:8888/ws";
+    private static final String url = "ws://81.68.245.247:8888/ws/aircraft";
     private WebSocketClient client;
 
     public void setTargetLatitude(double targetLatitude) {
@@ -68,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     private double targetLongitude = 0;
 
+    public Queue<location> workQueue = new LinkedList<location>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -231,14 +234,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 fc.TakeOff();
                 break;
             case R.id.btn_nav:
-                fc.AutoNav(targetLatitude, targetLongitude);
-//                navMission = new NavMission(flightController, targetLatitude, targetLongitude);
-//                try {
-//                    navMission.Start();
-//                    logger.add("[NAV]", "start auto nav mission");
-//                } catch (Error e) {
-//                    showToast(e.getMessage());
-//                }
+                //fc.AutoNav(targetLatitude, targetLongitude);
+                fc.NavQueue(workQueue);
                 break;
             case R.id.btn_cfm:
                 float _latitude = Float.parseFloat(latitudeET.getText().toString());
@@ -264,7 +261,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 try {
                     if (client != null) {
                         client.closeBlocking();
-
                     }
                     client = new WsConn(new URI(url), this);
                     client.connectBlocking();

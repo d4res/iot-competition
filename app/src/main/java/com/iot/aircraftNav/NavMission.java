@@ -15,7 +15,7 @@ import dji.sdk.flightcontroller.FlightController;
 /**
  * NavMission 自动巡航任务
  */
-public class NavMission {
+public class NavMission implements Runnable{
 
     private ScheduledFuture future1 , future2 ;
     private double angle;
@@ -46,7 +46,7 @@ public class NavMission {
      *      2. 飞机飞行至目标地点. 当纬度差距在fast_epsilon之后, 以较快的速度5飞行; 当差距小于fast_epsilon时, 飞机以较低速度1飞行. 当差距在epsilon中时, 判定为达到目标点, 停止飞行.
      *      注意: 我们需要控制速度来达到较好的精确度.
      */
-    public void Start() throws Error{
+    public Thread Start() throws Error{
             t = new Thread(
                     new Runnable() {
                         @Override
@@ -110,6 +110,7 @@ public class NavMission {
             );
 
             t.start();
+            return t;
     }
 
     public void Stop() {
@@ -137,6 +138,71 @@ public class NavMission {
             return -Math.toDegrees(theta);
         }
         return Math.toDegrees(theta);
+    }
+
+    @Override
+    public void run() {
+        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+        future1 = service.scheduleAtFixedRate(new Runnable() {
+            private int cnt = 0;
+            @Override
+            public void run() {
+                cnt ++;
+                flightController.sendVirtualStickFlightControlData(new FlightControlData(0, 0, (float) angle, 0), djiError -> {
+                    if (djiError != null) {
+                        throw  new Error(djiError.getDescription());
+                    }
+                });
+
+                if (cnt == 25 || t.isInterrupted()) {
+                    future1.cancel(true);
+                }
+            }
+
+        }, 0, 200, TimeUnit.MILLISECONDS);
+
+        while (!future1.isDone()) {
+            try {
+                Thread.sleep(100);
+            }catch (InterruptedException e) {
+                break;
+            }
+        }
+
+        ScheduledExecutorService service2 = Executors.newSingleThreadScheduledExecutor();
+        future2 = service2.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                if (t.isInterrupted()) {
+                    future2.cancel(true);
+                }
+                LocationCoordinate3D curLoc = flightController.getState().getAircraftLocation();
+                if (Math.abs(curLoc.getLatitude()) - targetLatitude > fast_epsilon) { // 远距离高速行驶
+                    flightController.sendVirtualStickFlightControlData(new FlightControlData(0, 5, (float) angle, 0), djiError -> {
+                        if (djiError != null) {
+                            throw new Error(djiError.getDescription());
+                        }
+                    });
+                } else { // 近距离低速行驶
+                    if (Math.abs(curLoc.getLatitude()  - targetLatitude) < epsilon) {
+                        future2.cancel(true);
+                    }
+                    flightController.sendVirtualStickFlightControlData(new FlightControlData(0,1,(float) angle, 0), djiError ->{
+                        if (djiError != null) {
+                            throw  new Error(djiError.getDescription());
+                        }
+                    });
+                }
+            }
+        }, 0, 200, TimeUnit.MILLISECONDS);
+
+        while (!future2.isDone()) {
+            try {
+                Thread.sleep(100);
+            }catch (InterruptedException e) {
+                break;
+            }
+        }
     }
 
 }
