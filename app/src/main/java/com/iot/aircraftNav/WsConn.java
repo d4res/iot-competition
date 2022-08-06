@@ -4,46 +4,44 @@ import android.util.Log;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.Locale;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 
-public class    WsConn extends WebSocketClient {
+public class WsConn extends WebSocketClient {
 
-    private MainActivity m;
+    private final MainActivity m;
     public WsConn(URI serverURI, MainActivity m) {super(serverURI); this.m = m;}
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        // System.out.println("new connection opened");
+
     }
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
         Log.d("[WS-CLOSE]", String.format("id: %d; reason: %s", code, reason) );
-        m.showToast("ws close. code: " + code + " reason: " + reason);
+        m.logger.add("[WS]", String.format(Locale.CHINA, "close. id: %d; reason: %s", code, reason));
     }
 
     @Override
     public void onMessage(String message) {
-        m.showToast(message);
-        Log.d("[MSG]", message);
         try {
             JSONObject obj = new JSONObject(message);
+            JSONArray data = obj.getJSONArray("");
             double latitude = obj.getDouble("latitude");
             double longitude = obj.getDouble("longitude");
             m.setTargetLatitude(latitude);
             m.setTargetLongitude(longitude);
             m.latitudeET.setText(String.valueOf(latitude));
             m.longitudeET.setText(String.valueOf(longitude));
-            m.showToast(latitude + " " + longitude) ;
-
-            Log.d("[MSG]", "json " + latitude + " " + longitude);
+            m.logger.add("[WS]",String.format(Locale.CHINA, "receive gps: %f %f", latitude, longitude));
         } catch (Exception e ) {
-            m.showToast("error parsing message");
-            Log.d("[MSG]", e.getMessage());
+            m.logger.add("[WS]", e.getMessage());
         }
     }
 
@@ -55,7 +53,7 @@ public class    WsConn extends WebSocketClient {
 
     @Override
     public void onError(Exception ex) {
-        System.err.println("an error occurred:" + ex);
+        m.logger.add("[WS]", ex.getMessage());
     }
 
 }
