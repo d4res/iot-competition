@@ -137,14 +137,11 @@ public class FlighterController {
                         while(!workQueue.isEmpty()) {
                             location work = workQueue.poll();
                             navMission = new NavMission(flightController, work.latitude, work.longitude);
-                            Thread workThread = new Thread(navMission);
-                            workThread.start();
-                            try {
-                                workThread.join();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            
+
+                            log("before mission start");
+                            navMission.Start();
+                            log("end mission");
+
                             try {
                                 InputStream in = connection.getInputStream();
                                 in.close();
@@ -158,14 +155,14 @@ public class FlighterController {
                                 log(e.getMessage());
                             }
                         }
+                        log("all work is done");
                     }
                 }
         ).start();
     }
 
     public void StopNav() {
-        navMission.Stop();
-        log("navMission stop manually");
+        log("navMission stop manually{under construction}");
     }
 
 }
