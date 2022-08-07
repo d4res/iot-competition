@@ -1,6 +1,9 @@
 package com.iot.aircraftNav;
 
 import static java.lang.Math.PI;
+import static java.lang.Math.log;
+
+import android.location.Location;
 
 import java.sql.Struct;
 import java.util.concurrent.Executors;
@@ -46,6 +49,7 @@ public class NavMission{
      *      注意: 我们需要控制速度来达到较好的精确度.
      */
     public void Start() throws Error {
+
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         future1 = service.scheduleAtFixedRate(new Runnable() {
             private int cnt = 0;
@@ -79,14 +83,19 @@ public class NavMission{
             @Override
             public void run() {
                 LocationCoordinate3D curLoc = flightController.getState().getAircraftLocation();
-                if (Math.abs(curLoc.getLatitude() - targetLatitude) > fast_epsilon ) { // 远距离高速行驶
+
+                // res[0] is the distance, res[1] is the bearing
+                float[] res = new float[2];
+                Location.distanceBetween(curLoc.getLatitude(), curLoc.getLongitude(), targetLatitude, targetLongitude, res);
+
+                if (res[0] >= 5) {
                     flightController.sendVirtualStickFlightControlData(new FlightControlData(0, 5, (float) angle, 0), djiError -> {
                         if (djiError != null) {
                             throw new Error(djiError.getDescription());
                         }
                     });
-                } else { // 近距离低速行驶
-                    if (Math.abs(curLoc.getLatitude()  - targetLatitude) < epsilon) {
+                } else {
+                    if (res[0] < 0.5) {
                         future2.cancel(true);
                     }
                     flightController.sendVirtualStickFlightControlData(new FlightControlData(0,1,(float) angle, 0), djiError ->{
@@ -95,6 +104,23 @@ public class NavMission{
                         }
                     });
                 }
+
+//                if (Math.abs(curLoc.getLatitude() - targetLatitude) > fast_epsilon ) { // 远距离高速行驶
+//                    flightController.sendVirtualStickFlightControlData(new FlightControlData(0, 5, (float) angle, 0), djiError -> {
+//                        if (djiError != null) {
+//                            throw new Error(djiError.getDescription());
+//                        }
+//                    });
+//                } else { // 近距离低速行驶
+//                    if (Math.abs(curLoc.getLatitude()  - targetLatitude) < epsilon ) {
+//                        future2.cancel(true);
+//                    }
+//                    flightController.sendVirtualStickFlightControlData(new FlightControlData(0,1,(float) angle, 0), djiError ->{
+//                        if (djiError != null) {
+//                            throw  new Error(djiError.getDescription());
+//                        }
+//                    });
+//                }
             }
         }, 0, 200, TimeUnit.MILLISECONDS);
 
@@ -118,7 +144,7 @@ public class NavMission{
      * @param lon2 起点经度
      * @return 方位角. [-180,180] 顺时针为正, 逆时针为负
      */
-    double getDirection(double lat1, double lon1, double lat2, double lon2) {
+    static double getDirection(double lat1, double lon1, double lat2, double lon2) {
         lat1 = Math.toRadians(lat1);
         lat2 = Math.toRadians(lat2);
         lon1 = Math.toRadians(lon1);

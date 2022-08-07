@@ -1,6 +1,8 @@
 package com.iot.aircraftNav;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.location.Location;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -10,7 +12,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -221,9 +227,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
 
             case R.id.btn_stop:
-                fc.StopNav();
-                logger.add("[NAV]", "stop manually");
+                double startLat = 45.74316024, startLon = 126.63117, endLat = 45.74316024, endLon = 126.62;
+                float[] res = new float[2];
+                Location.distanceBetween(startLat, startLon, endLat, endLon , res);
+                logger.add("[test]", String.valueOf(res[1])+ String.valueOf(res[0]));
+                double ret = navMission.getDirection(startLat, startLon, endLat, endLon);
+                logger.add("[test]", String.valueOf(ret));
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        HttpURLConnection connection = null;
+                        try {
+
+                            String url2 = "http://81.68.245.247:8888/arrive";
+                            URL _url = new URL(url2);
+                            connection = (HttpURLConnection) _url.openConnection();
+                            connection.setRequestMethod("GET");
+                            connection.setConnectTimeout(50000);
+                            connection.setReadTimeout(50000);
+                        } catch (Exception e) {
+                            logger.add("",e.getMessage());
+                        }
+                        try {
+                            InputStream in = connection.getInputStream();
+                            in.close();
+                        } catch (IOException e) {
+                            logger.add("",e.getMessage());
+                        }
+                    }
+                }).start();
+
                 break;
+
             case R.id.btn_enable:
                 fc.EnableVS();
                 break;
