@@ -2,6 +2,7 @@ package gps
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/suifengtec/gocoord"
 	"io"
 	"log"
@@ -24,6 +25,7 @@ func (s *Server) GpsReceiver() http.HandlerFunc {
 		defer body.Close()
 		contents, err := io.ReadAll(body)
 		if err != nil {
+
 			log.Println(err)
 		}
 		var location Location
@@ -32,13 +34,17 @@ func (s *Server) GpsReceiver() http.HandlerFunc {
 			log.Println(err)
 		}
 
-		location = transGPS(location)
+		switch r.URL.Query().Get("type") {
+		case "raw":
+		default:
+			location = transGPS(location)
+		}
 		log.Printf("receive gps %v", location)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("success"))
 
 		go func(loc Location) {
-			s.Task <- loc
+			s.TaskLine <- []Location{loc}
 		}(location)
 	}
 }
@@ -55,10 +61,18 @@ func (s *Server) GpsList() http.HandlerFunc {
 		}
 		var locations []Location
 		err = json.Unmarshal(contents, &locations)
+		if err != nil {
+			log.Println(err)
+		}
 
 		for i := range locations {
-			locations[i] = transGPS(locations[i])
+			switch r.URL.Query().Get("type") {
+			case "raw":
+			default:
+				locations[i] = transGPS(locations[i])
+			}
 		}
+		fmt.Println("recv: ", locations)
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("success"))
@@ -66,5 +80,18 @@ func (s *Server) GpsList() http.HandlerFunc {
 		go func(locs []Location) {
 			s.TaskLine <- locs
 		}(locations)
+	}
+}
+
+func (s *Server) OnArrive() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Println("aircraft arrive")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("success"))
+
+		// using this to avoid blocking when sending response
+		go func() {
+			s.Arrive <- struct{}{}
+		}()
 	}
 }

@@ -5,7 +5,7 @@ import asyncio
 import websockets
 
 async def hello():
-    async with websockets.connect('ws://localhost:8888/ws/aircraft') as websocket:
+    async with websockets.connect('ws://localhost:8888/ws/raspberry') as websocket:
         while True:
             greeting = await websocket.recv()
             print(f"< {greeting}")

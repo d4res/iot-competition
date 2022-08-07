@@ -6,19 +6,21 @@ import (
 )
 
 type Server struct {
-	Task     chan Location
 	TaskLine chan []Location
+	Arrive   chan struct{}
 }
 
 func NewServer() *Server {
-	return &Server{Task: make(chan Location, 0)}
+	return &Server{TaskLine: make(chan []Location, 0), Arrive: make(chan struct{}, 0)}
 }
 
 func (s *Server) Start() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/gps", s.GpsReceiver())
-	mux.HandleFunc("/ws", s.WsConn())
+	mux.HandleFunc("/ws/aircraft", s.WsConn(AIRCRAFT))
+	mux.HandleFunc("/ws/raspberry", s.WsConn(RASPBERRY))
+	mux.HandleFunc("/arrive", s.OnArrive())
 	mux.HandleFunc("/gpsList", s.GpsList())
 
 	log.Println("listening on :8888.\n/gps\n/ws\n/gpsList")
