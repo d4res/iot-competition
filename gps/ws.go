@@ -22,19 +22,20 @@ func (s *Server) WsConn(typ int) http.HandlerFunc {
 		defer body.Close()
 
 		conn, _, _, err := ws.UpgradeHTTP(r, w)
-		context.Background()
+		ctx, cancel := context.WithCancel(context.Background())
+
 		if err != nil {
 			log.Println(err)
 		}
 
 		// read loop
-		go s.readLoop(conn)
+		go s.readLoop(conn, cancel)
 
 		if typ == AIRCRAFT {
 			// write loop
-			go s.writeLoop(conn)
+			go s.writeLoop(conn, ctx)
 		} else {
-			go s.writeLoop2(conn)
+			go s.writeLoop2(conn, ctx)
 		}
 
 		for {
@@ -43,11 +44,12 @@ func (s *Server) WsConn(typ int) http.HandlerFunc {
 	}
 }
 
-func (s *Server) readLoop(conn net.Conn) {
+func (s *Server) readLoop(conn net.Conn, cancelFunc context.CancelFunc) {
 	for {
 		frame, err := ws.ReadFrame(conn)
 		if err != nil {
 			log.Println("err: ", err.Error())
+			cancelFunc()
 			return
 		}
 
@@ -65,13 +67,16 @@ func (s *Server) readLoop(conn net.Conn) {
 	}
 }
 
-func (s *Server) writeLoop(conn net.Conn) {
+func (s *Server) writeLoop(conn net.Conn, ctx context.Context) {
 	for {
 		var data []byte
 		var err error
 		select {
 		case locationLine := <-s.TaskLine:
 			data, err = json.Marshal(locationLine)
+		case <-ctx.Done():
+			log.Println("close writeLoop.")
+			return
 		}
 
 		if err != nil {
@@ -87,9 +92,14 @@ func (s *Server) writeLoop(conn net.Conn) {
 	}
 }
 
-func (s *Server) writeLoop2(conn net.Conn) {
+func (s *Server) writeLoop2(conn net.Conn, ctx context.Context) {
 	for {
-		<-s.Arrive
+		select {
+		case <-ctx.Done():
+			log.Println("close writeLoop")
+		case <-s.Arrive:
+		}
+		//<-s.Arrive
 		frame := ws.NewFrame(ws.OpText, true, []byte("confirm"))
 		log.Println("sending confirm to the raspberry")
 		err := ws.WriteFrame(conn, frame)
