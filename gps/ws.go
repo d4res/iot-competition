@@ -3,7 +3,9 @@ package gps
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/gobwas/ws"
+	"iot-backend/db"
 	"log"
 	"net"
 	"net/http"
@@ -13,6 +15,7 @@ import (
 const (
 	AIRCRAFT = iota
 	RASPBERRY
+	WEAPP
 )
 
 func (s *Server) WsConn(typ int) http.HandlerFunc {
@@ -28,14 +31,42 @@ func (s *Server) WsConn(typ int) http.HandlerFunc {
 			log.Println(err)
 		}
 
-		// read loop
-		go s.readLoop(conn, cancel)
+		switch typ {
+		case AIRCRAFT:
+			log.Println("aircraft in")
+		case WEAPP:
+			log.Println("weapp in")
+		case RASPBERRY:
+			log.Println("raspberry in")
+		}
 
-		if typ == AIRCRAFT {
-			// write loop
-			go s.writeLoop(conn, ctx)
-		} else {
-			go s.writeLoop2(conn, ctx)
+		// readLoop
+		switch typ {
+		case AIRCRAFT:
+			go s.readLoop(conn, cancel, func(frame ws.Frame) {
+				fmt.Println(string(frame.Payload))
+				var loc db.Location
+				err := json.Unmarshal(frame.Payload, &loc)
+				if err != nil {
+					log.Println(err)
+				}
+				go func(location db.Location) {
+					s.AcLoc <- location
+				}(loc)
+			})
+		default:
+			go s.readLoop(conn, cancel, func(frame ws.Frame) {
+			})
+		}
+
+		// writeLoop
+		switch typ {
+		case AIRCRAFT:
+			go s.writeLoopAC(conn, ctx)
+		case WEAPP:
+			go s.writeLoopWEAPP(conn, ctx)
+		case RASPBERRY:
+			go s.writeLoopRASP(conn, ctx)
 		}
 
 		for {
@@ -44,7 +75,7 @@ func (s *Server) WsConn(typ int) http.HandlerFunc {
 	}
 }
 
-func (s *Server) readLoop(conn net.Conn, cancelFunc context.CancelFunc) {
+func (s *Server) readLoop(conn net.Conn, cancelFunc context.CancelFunc, handler func(frame ws.Frame)) {
 	for {
 		frame, err := ws.ReadFrame(conn)
 		if err != nil {
@@ -64,10 +95,12 @@ func (s *Server) readLoop(conn net.Conn, cancelFunc context.CancelFunc) {
 				log.Println(err.Error())
 			}
 		}
+
+		handler(frame)
 	}
 }
 
-func (s *Server) writeLoop(conn net.Conn, ctx context.Context) {
+func (s *Server) writeLoopAC(conn net.Conn, ctx context.Context) {
 	for {
 		var data []byte
 		var err error
@@ -75,7 +108,7 @@ func (s *Server) writeLoop(conn net.Conn, ctx context.Context) {
 		case locationLine := <-s.TaskLine:
 			data, err = json.Marshal(locationLine)
 		case <-ctx.Done():
-			log.Println("close writeLoop.")
+			log.Println("close writeLoopAC.")
 			return
 		}
 
@@ -92,11 +125,12 @@ func (s *Server) writeLoop(conn net.Conn, ctx context.Context) {
 	}
 }
 
-func (s *Server) writeLoop2(conn net.Conn, ctx context.Context) {
+func (s *Server) writeLoopRASP(conn net.Conn, ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			log.Println("close writeLoop")
+			log.Println("close writeLoopRASP")
+			return
 		case <-s.Arrive:
 		}
 		//<-s.Arrive
@@ -105,6 +139,32 @@ func (s *Server) writeLoop2(conn net.Conn, ctx context.Context) {
 		err := ws.WriteFrame(conn, frame)
 		if err != nil {
 			log.Println(err.Error())
+		}
+	}
+}
+
+func (s *Server) writeLoopWEAPP(conn net.Conn, ctx context.Context) {
+	for {
+		var loc db.Location
+		var data []byte
+		var err error
+		select {
+		case <-ctx.Done():
+			log.Println("close writeLoopWEAPP")
+			return
+		case loc = <-s.AcLoc:
+			loc = transGPS(loc)
+			data, err = json.Marshal(loc)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+
+		frame := ws.NewFrame(ws.OpText, true, data)
+		log.Println("sending data back to weapp")
+		err = ws.WriteFrame(conn, frame)
+		if err != nil {
+			log.Println(err)
 		}
 	}
 }

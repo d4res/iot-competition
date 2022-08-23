@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"github.com/suifengtec/gocoord"
 	"io"
+	"iot-backend/db"
 	"log"
 	"net/http"
+	"time"
 )
 
-func transGPS(location Location) Location {
-	p := gocoord.BD09ToWGS84(gocoord.Position{
+func transGPS(location db.Location) db.Location {
+	p := gocoord.WGS84ToGCJ02(gocoord.Position{
 		Lon: location.Longitude,
 		Lat: location.Latitude,
 	})
@@ -28,7 +30,7 @@ func (s *Server) GpsReceiver() http.HandlerFunc {
 
 			log.Println(err)
 		}
-		var location Location
+		var location db.Location
 		err = json.Unmarshal(contents, &location)
 		if err != nil {
 			log.Println(err)
@@ -43,12 +45,14 @@ func (s *Server) GpsReceiver() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("success"))
 
-		go func(loc Location) {
-			s.TaskLine <- []Location{loc}
+		go func(loc db.Location) {
+			s.TaskLine <- []db.Location{loc}
 		}(location)
 	}
 }
 
+// GpsList 负责接收gps任务队列, 当收到GPS任务信息后,
+// 会向无人机进行转发. 此外, 收到的gps列表以及时间都会被保存在数据库中.
 func (s *Server) GpsList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -59,7 +63,7 @@ func (s *Server) GpsList() http.HandlerFunc {
 		if err != nil {
 			log.Println(err)
 		}
-		var locations []Location
+		var locations []db.Location
 		err = json.Unmarshal(contents, &locations)
 		if err != nil {
 			log.Println(err)
@@ -73,11 +77,20 @@ func (s *Server) GpsList() http.HandlerFunc {
 			}
 		}
 		fmt.Println("recv: ", locations)
+		m := &db.Mission{
+			Time:      time.Now(),
+			Locations: locations,
+		}
+
+		err = m.Insert()
+		if err != nil {
+			log.Println(err)
+		}
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("success"))
 
-		go func(locs []Location) {
+		go func(locs []db.Location) {
 			s.TaskLine <- locs
 		}(locations)
 	}

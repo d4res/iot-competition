@@ -1,0 +1,18 @@
+services:
+  web:
+    build: .
+    depends_on:
+      - mongod
+    environment:
+      - DBHOST=mongod
+    ports:
+      - 8888:8888
+  mongod:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: r00tp4ss
+    ports:
+      - 27017:27017
+
