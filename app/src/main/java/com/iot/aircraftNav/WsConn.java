@@ -42,6 +42,8 @@ public class WsConn extends WebSocketClient {
 //                m.longitudeET.setText(String.valueOf(longitude));
                 m.workQueue.add(loc);
             }
+
+//            m.fc.NavQueue(m.workQueue);
         } catch (Exception e ) {
             m.logger.add("[WS]", e.getMessage());
         }

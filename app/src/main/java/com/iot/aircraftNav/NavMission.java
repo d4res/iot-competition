@@ -95,7 +95,7 @@ public class NavMission{
                         }
                     });
                 } else {
-                    if (res[0] < 0.5) {
+                    if (res[0] < 1) {
                         future2.cancel(true);
                     }
                     flightController.sendVirtualStickFlightControlData(new FlightControlData(0,1,(float) angle, 0), djiError ->{

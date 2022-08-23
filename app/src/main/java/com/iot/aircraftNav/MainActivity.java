@@ -17,10 +17,16 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.java_websocket.client.WebSocketClient;
+import org.json.JSONObject;
 
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.LocationCoordinate3D;
@@ -57,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private AppActivationManager appActivationManager;
     private AircraftBindingState.AircraftBindingStateListener bindingStateListener;
     private dji.sdk.flightcontroller.FlightController flightController;
-    private FlighterController fc;
+    public FlighterController fc;
 
     protected logger logger;
 
@@ -270,7 +276,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 fc.TakeOff();
                 break;
             case R.id.btn_nav:
-                //fc.AutoNav(targetLatitude, targetLongitude);
                 fc.NavQueue(workQueue);
                 break;
             case R.id.btn_cfm:
@@ -302,6 +307,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     client.connectBlocking();
                     showToast("connect success");
                     wsTV.setText("connect");
+
+                    ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+                    service.scheduleAtFixedRate(new Runnable() {
+                        @Override
+                        public void run() {
+                            LocationCoordinate3D curLoc = flightController.getState().getAircraftLocation();
+
+                            // 飞机可能有获取不到gps的情况, 此时的经纬度为NAN
+                            if (!(Double.isNaN(curLoc.getLongitude()) || Double.isNaN(curLoc.getLatitude()))){
+                                Map<String, Double> location = new HashMap<>();
+                                location.put("latitude", curLoc.getLatitude());
+                                location.put("longitude", curLoc.getLongitude());
+                                JSONObject json = new JSONObject(location);
+                                client.send(json.toString());
+                            }
+                        }
+                    },1, 1, TimeUnit.SECONDS);
                 } catch (Exception e) {
                     showToast("connect error");
                     e.printStackTrace();

@@ -25,8 +25,7 @@ public class FlighterController {
     private final boolean isAvailable ;
     private  boolean isVSOn;
     NavMission navMission;
-    private HttpURLConnection connection = null;
-    private final String url = "http://81.68.245.247:8888/arrive";
+
 
     private void log(String msg) {
         logger.add("[FC]", msg);
@@ -49,15 +48,7 @@ public class FlighterController {
         }
         isVSOn = false;
 
-        try {
-            URL _url = new URL(url);
-            this.connection = (HttpURLConnection) _url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(50000);
-            connection.setReadTimeout(50000);
-        } catch (Exception e) {
-            log(e.getMessage());
-        }
+
     }
 
     public boolean IsAvailable() {
@@ -130,7 +121,7 @@ public class FlighterController {
     }
 
     public void NavQueue(Queue<location> workQueue) {
-        new Thread(
+        Thread t = new Thread(
                 new Runnable() {
                     @Override
                     public void run() {
@@ -143,6 +134,17 @@ public class FlighterController {
                             log("end mission");
 
                             try {
+                                HttpURLConnection connection = null;
+                                final String url = "http://81.68.245.247:8888/arrive";
+                                try {
+                                    URL _url = new URL(url);
+                                    connection = (HttpURLConnection) _url.openConnection();
+                                    connection.setRequestMethod("GET");
+                                    connection.setConnectTimeout(50000);
+                                    connection.setReadTimeout(50000);
+                                } catch (Exception e) {
+                                    log(e.getMessage());
+                                }
                                 InputStream in = connection.getInputStream();
                                 in.close();
                             } catch (IOException e) {
@@ -150,7 +152,7 @@ public class FlighterController {
                             }
                             log(String.format("arrive: %f %f",work.latitude, work.longitude));
                             try {
-                                Thread.sleep(1000);
+                                Thread.sleep(10000);
                             } catch (InterruptedException e) {
                                 log(e.getMessage());
                             }
@@ -158,7 +160,8 @@ public class FlighterController {
                         log("all work is done");
                     }
                 }
-        ).start();
+        );
+        t.start();
     }
 
     public void StopNav() {
