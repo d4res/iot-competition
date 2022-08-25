@@ -1,0 +1,16 @@
+/* pages/cropStatus/cropStatus.wxss */
+
+.bg {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.image {
+    width: 100%;
+}
+
+body {
+    /* height: 100%; */
+    /* width: 100%; */
+}

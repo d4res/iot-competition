@@ -1,0 +1,9 @@
+<van-cell-group title="任务记录">
+<van-cell 
+wx:for="{{missions}}" 
+wx:key="unique" 
+title="{{item.time}}"
+ link-type="navigateTo" url="/pages/mission/mission?data={{item.locations}}"
+arrow-direction="left"
+></van-cell>
+</van-cell-group>

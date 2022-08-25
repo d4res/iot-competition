@@ -1,0 +1,38 @@
+{
+    "pages": [
+        "pages/cropStatus/cropStatus",
+        "pages/Nav/nav",
+        "pages/log/log",
+        "pages/mission/mission"
+    ],
+    "window": {
+        "backgroundTextStyle": "light",
+        "navigationBarBackgroundColor": "#fff",
+        "navigationBarTitleText": "农田守望者",
+        "navigationBarTextStyle": "black"
+    },
+    "sitemapLocation": "sitemap.json",
+    "tabBar": {
+        "list": [
+            {
+                "pagePath": "pages/cropStatus/cropStatus",
+                "text": "病害识别",
+                "iconPath": "/assets/crop.png",
+                "selectedIconPath": "/assets/crop_on.png"
+            },
+            {
+                "pagePath": "pages/Nav/nav",
+                "text": "航线追踪",
+                "iconPath": "/assets/nav.png",
+                "selectedIconPath": "/assets/nav_on.png"
+            },
+            {
+                "pagePath": "pages/log/log",
+                "text": "操作记录",
+                "iconPath": "/assets/log.png",
+                "selectedIconPath": "/assets/log_on.png"
+            }
+        ],
+        "selectedColor": "#1296db"
+    }
+}

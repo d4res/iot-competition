@@ -1,0 +1,11 @@
+<!--pages/mission.wxml-->
+<van-row > 
+    <van-col span="12" class="text-center">纬度</van-col> 
+    <van-col span="12" class="text-center">经度</van-col>
+</van-row>
+
+<van-row wx:for="{{locations}}" wx:key="unique">
+    <van-col span="12" class="text-center">{{item.latitude}}</van-col>
+
+    <van-col span="12" class="text-center">{{item.longitude}}</van-col>
+</van-row>

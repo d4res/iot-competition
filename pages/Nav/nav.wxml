@@ -1,0 +1,9 @@
+<!--pages/Nav/nav.wxml-->
+<map
+    id="map"
+    class="map"
+    latitude="{{startPoint.latitude}}"
+    longitude="{{startPoint.longitude}}"
+    enable-satellite="true"
+>
+</map>
