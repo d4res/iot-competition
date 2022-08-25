@@ -19,7 +19,7 @@ public class WsConn extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-
+        m.logger.add("[WS]", String.format(Locale.CHINA, "connect success"));
     }
 
     @Override
@@ -38,12 +38,9 @@ public class WsConn extends WebSocketClient {
                 double longitude = obj.getDouble("longitude");
                 m.logger.add("[WS]",String.format(Locale.CHINA, "receive gps: %f %f", latitude, longitude));
                 location loc = new location(latitude, longitude);
-//                m.latitudeET.setText(String.valueOf(latitude));
-//                m.longitudeET.setText(String.valueOf(longitude));
                 m.workQueue.add(loc);
             }
-
-//            m.fc.NavQueue(m.workQueue);
+            m.fc.Process(m.workQueue);
         } catch (Exception e ) {
             m.logger.add("[WS]", e.getMessage());
         }
@@ -51,7 +48,6 @@ public class WsConn extends WebSocketClient {
 
     @Override
     public void onMessage(ByteBuffer message) {
-        //System.out.println("received ByteBuffer");
     }
 
 

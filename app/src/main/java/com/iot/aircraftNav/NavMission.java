@@ -88,6 +88,7 @@ public class NavMission{
                 float[] res = new float[2];
                 Location.distanceBetween(curLoc.getLatitude(), curLoc.getLongitude(), targetLatitude, targetLongitude, res);
 
+
                 if (res[0] >= 5) {
                     flightController.sendVirtualStickFlightControlData(new FlightControlData(0, 5, (float) angle, 0), djiError -> {
                         if (djiError != null) {
@@ -105,22 +106,6 @@ public class NavMission{
                     });
                 }
 
-//                if (Math.abs(curLoc.getLatitude() - targetLatitude) > fast_epsilon ) { // 远距离高速行驶
-//                    flightController.sendVirtualStickFlightControlData(new FlightControlData(0, 5, (float) angle, 0), djiError -> {
-//                        if (djiError != null) {
-//                            throw new Error(djiError.getDescription());
-//                        }
-//                    });
-//                } else { // 近距离低速行驶
-//                    if (Math.abs(curLoc.getLatitude()  - targetLatitude) < epsilon ) {
-//                        future2.cancel(true);
-//                    }
-//                    flightController.sendVirtualStickFlightControlData(new FlightControlData(0,1,(float) angle, 0), djiError ->{
-//                        if (djiError != null) {
-//                            throw  new Error(djiError.getDescription());
-//                        }
-//                    });
-//                }
             }
         }, 0, 200, TimeUnit.MILLISECONDS);
 

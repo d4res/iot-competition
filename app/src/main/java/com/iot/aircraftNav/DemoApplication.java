@@ -17,6 +17,10 @@ import dji.sdk.base.BaseProduct;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
 
+/**
+ * DemoApplication 用于DJI SDK 验证等操作
+ * 详细参考官方文档
+ */
 public class DemoApplication extends Application {
     public static final String FLAG_CONNECTION_CHANGE = "activationDemo_connection_change";
 

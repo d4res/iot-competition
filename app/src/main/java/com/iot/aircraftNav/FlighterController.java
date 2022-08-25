@@ -120,7 +120,7 @@ public class FlighterController {
         }
     }
 
-    public void NavQueue(Queue<location> workQueue) {
+    public Thread NavQueue(Queue<location> workQueue)  {
         Thread t = new Thread(
                 new Runnable() {
                     @Override
@@ -162,6 +162,66 @@ public class FlighterController {
                 }
         );
         t.start();
+        return t;
+    }
+
+
+    /**
+     * Process 为我们提供了完整的飞行任务控制
+     * 我们传入任务队列后, 无人机会起飞, 飞向各个目标点。 具体操作如下
+     * 1. EnableVS()
+     * 2. 起飞 TakeOff()
+     * 3. 飞行任务 NavQueue()
+     * 4. 返航 GoHome()
+     * @param workQueue 任务队列
+     *
+     * TODO: 将DJI SDK中提供的各种异步调用以更优雅的方式进行顺序调用
+     */
+    public void Process(Queue<location> workQueue) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                    flightController.setVirtualStickModeEnabled(true, djiError -> {
+                        if (djiError != null) {
+                            log(djiError.getDescription());
+                        } else {
+                            isVSOn = true;
+                            log("enable virtual stick success");
+                            flightController.startTakeoff(
+                                    new CommonCallbacks.CompletionCallback() {
+                                        @Override
+                                        public void onResult(DJIError djiError) {
+                                            if (djiError != null) {
+                                                log(djiError.getDescription());
+                                            } else {
+                                                log("take off success");
+                                                try {
+                                                    Thread.sleep(3000);
+                                                } catch (InterruptedException e) {
+                                                    log(e.getMessage());
+                                                }
+                                                Thread watcher = NavQueue(workQueue);
+                                                try {
+                                                    watcher.join();
+                                                } catch (InterruptedException e) {
+                                                    log(e.getMessage());
+                                                }
+
+                                                flightController.startGoHome(homeError -> {
+                                                    if (homeError != null) {
+                                                        log(homeError.getDescription());
+                                                    } else {
+                                                        log( "start go home");
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    }
+                            );
+                        }
+                    });
+            }
+        }).start();
     }
 
     public void StopNav() {
