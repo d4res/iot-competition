@@ -1,4 +1,5 @@
 <van-cell-group title="任务记录">
+<div class="an-hairline--surround"> with border </div>
 <van-cell 
 wx:for="{{missions}}" 
 wx:key="unique" 

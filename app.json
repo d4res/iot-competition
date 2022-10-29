@@ -3,7 +3,8 @@
         "pages/cropStatus/cropStatus",
         "pages/Nav/nav",
         "pages/log/log",
-        "pages/mission/mission"
+        "pages/mission/mission",
+        "components/ImageViewer/ImageViewer"
     ],
     "window": {
         "backgroundTextStyle": "light",

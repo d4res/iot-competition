@@ -2,12 +2,11 @@
 
 <view style="display: flex; flex-direction: column; align-items: stretch; width: 100%;">
     <scroll-view scroll-y="true">
-        <view wx:for="{{imageNames}}" wx:key="unique">
+        <view wx:for="{{imageNames}}" wx:key="unique" >
             <image src="{{item.url}}" class="image" mode="widthFix" ></image>
            <view style="text-align: center;"> <text> {{item.pos.latitude}}</text> <text> {{item.pos.longitude}}</text>
            </view>
         </view>
-        
     </scroll-view>
 </view>
 

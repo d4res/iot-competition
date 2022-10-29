@@ -38,10 +38,6 @@ Page({
         })
         socketTask.onMessage((res)=>{
             let newLoc = JSON.parse(res.data)
-            if (first) {
-                first = false 
-                this.setData()
-            }
             console.log(newLoc)
             this.mapCtx.translateMarker({
                 markerId: 1,

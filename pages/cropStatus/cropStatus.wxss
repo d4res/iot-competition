@@ -10,6 +10,11 @@
     width: 100%;
 }
 
+.image-container {
+    border: 2px solid aqua;
+    border-radius: 12px;
+}
+
 body {
     /* height: 100%; */
     /* width: 100%; */
